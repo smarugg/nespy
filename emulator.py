@@ -4,10 +4,10 @@ nes = hardware.NES()
   
 r = romloader.romLoader(nes)
 r.loadRom("Roms/Mario.nes")
-#r.printPrg(20)
 
 c = cpu.cpu(nes)
-c.memoryInit()
 
+c.memoryInit()
 c.cpuInit()
-c.execute()
+while True:
+    c.execute()
