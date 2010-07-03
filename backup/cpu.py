@@ -41,7 +41,7 @@ class cpu:
         self.nesSystem.cpu.accumulator = 0
         self.nesSystem.cpu.registerX = 0
         self.nesSystem.cpu.registerY = 0
-        self.nesSystem.cpu.status = [0, 0, 0, 0, 0, 0, 0, 0]
+        self.nesSystem.cpu.status = 0
         
 
     def execute(self):
@@ -64,7 +64,7 @@ class cpu:
                     
                   }
         tempCounter = self.nesSystem.cpu.programCounter
-        print hex(self.nesSystem.cpu.programCounter)
+
         #execute the instruction corresponding with the opcode signature          
         opCodes[currentOpCode](self.nesSystem, self)
         

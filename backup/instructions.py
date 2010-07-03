@@ -1,27 +1,22 @@
 import hardware
 
-#getting registers (the list indexes)
-I_F = 5
-N_F = 0
-Z_F = 6
+#getting individual bits shortcuts
+I_F = (1 << 2)
+N_F = (1 << 7)
+Z_F = (1 << 1)
 
 
-#Sign flag: this is set if the result of an operation is
-#negative, cleared if positive.
 def setN(nesSystem, result):
     if ord(result) < 0:
-        nesSystem.cpu.status[N_F] = 1
+        nesSystem.cpu.status |= N_F
     else:
-        nesSystem.cpu.status[N_F] = 0
-
-#Zero flag: this is set to 1 when any arithmetic or logical
-#operation produces a zero result, and is set to 0 if the result is
-#non-zero.        
+        nesSystem.cpu.status &= (~N_F)
+        
 def setZ(nesSystem, result):
     if ord(result) == 0:
-        nesSystem.cpu.status[Z_F] = 1
+        nesSystem.cpu.status |= Z_F
     else:
-        nesSystem.cpu.status[Z_F] = 0
+        nesSystem.cpu.status &= (~Z_F)
 
 
 def pushStack(nesSystem, byte):
@@ -32,7 +27,7 @@ def popStack(nesSystem):
         
 #0x78. Set interrupt disable status
 def SEI(nesSystem, cpu):
-    nesSystem.cpu.status[I_F] = 1
+    nesSystem.cpu.status |= I_F
    
 #0xD8. Clear decimal mode
 def CLD(nesSystem, cpu):
@@ -45,12 +40,12 @@ def LDA_Immediate(nesSystem, cpu):
     setN(nesSystem, nesSystem.cpu.accumulator)
     setZ(nesSystem, nesSystem.cpu.accumulator)
     
-#0x10. Branch on result plus. Jump back the RELATIVE number of bytes. 
-#If the operand was FB, then we jump back FB - FF+1 number of bytes (-5) 
+#0x10. Branch on result plus. 0x10 
 def BPL(nesSystem, cpu):
     cpu.operand = cpu.getNextByte()
-    if nesSystem.cpu.status[N_F] == 0:
-        nesSystem.cpu.programCounter += (ord(cpu.operand) - (0xFF + 1)) 
+    if not nesSystem.cpu.status & N_F :
+        print hex(nesSystem.cpu.programCounter + ord(cpu.operand))
+        print "hello"
         
 #0x8D. Store the byte in the accumulator into memory     
 def STA_Absolute(nesSystem, cpu):
