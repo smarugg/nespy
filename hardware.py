@@ -25,8 +25,8 @@ class CPU:
     programCounter = 0
     stackP = 0
     accumulator = 0
-    xIndex = 0
-    yIndex = 0
+    registerX = 0
+    registerY = 0
     status = 0
     cpuMemory = [0x10000]
     

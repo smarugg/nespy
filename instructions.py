@@ -24,16 +24,14 @@ def setZ(nesSystem, result):
 
 #0x78. Set interrupt disable status
 def SEI(nesSystem, cpu):
-    print "SEI" 
     nesSystem.cpu.status |= I_F
    
 #0xD8. Clear decimal mode
 def CLD(nesSystem, cpu):
-    print "CLD"
+    pass
     
 #0xA9. Load accumulator with memory
 def LDA(nesSystem, cpu):
-    print "LDA"
     cpu.operand = cpu.getNextByte()
     nesSystem.cpu.accumulator = cpu.operand
     setN(nesSystem, nesSystem.cpu.accumulator)
@@ -41,14 +39,22 @@ def LDA(nesSystem, cpu):
     
 #0x10. Branch on result plus. 0x10 
 def BPL(nesSystem, cpu):
-    print "BPL"
     cpu.operand = cpu.getNextByte()
     
     if not (nesSystem.cpu.status & N_F):
         nesSystem.cpu.programCounter += ord(cpu.operand)
         
-       
+#0x8D. Store the byte in the accumulator into memory     
 def STA_bbbb(nesSystem, cpu):
     cpu.operand = cpu.getNextWord()
     nesSystem.cpu.cpuMemory[ord(cpu.operand)] = nesSystem.cpu.accumulator
        
+def JSR(nesSystem, cpu):
+    pass
+ 
+#0xA2. load register X with next byte
+def LDX(nesSystem, cpu):
+    cpu.operand = cpu.getNextByte()
+    nesSystem.cpu.registerX =  cpu.operand
+    setN(nesSystem, nesSystem.cpu.registerX)
+    setZ(nesSystem, nesSystem.cpu.registerX)

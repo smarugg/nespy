@@ -47,6 +47,7 @@ class romLoader:
         print "ControlByte 2: ", ord(self.nesSystem.rom.controlByte2)
         print "Size of PRG Data: ", len(self.nesSystem.rom.prgData)
         print "Size of CHR Data: ", len(self.nesSystem.rom.chrData)
+        print "\n"
 
     def printPrg(self, count):
         for x in range(count):

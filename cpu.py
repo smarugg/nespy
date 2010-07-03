@@ -7,16 +7,20 @@ class cpu:
     def __init__(self, nes): 
         self.nesSystem = nes
         self.operand = 0
+        self.DEBUG = 1
+        
+    def trace(self, currentOpCode, tempCounter, instrName):
+        print "PC:", hex(tempCounter), instrName, currentOpCode, "   Accumulator:", hex(ord(str(self.nesSystem.cpu.accumulator))), "\n"
     
     def getNextByte(self):
         self.nesSystem.cpu.programCounter += 1
         return self.nesSystem.cpu.cpuMemory[self.nesSystem.cpu.programCounter]
         
     def getNextWord(self):
-        self.nesSystem.cpu.programCounter += 1
+        self.nesSystem.cpu.programCounter += 2
 
         self.operand = ord(self.operand) | (ord(self.nesSystem.cpu.cpuMemory[self.nesSystem.cpu.programCounter]) << 8)
-        return self.nesSystem.cpu.cpuMemory[self.nesSystem.cpu.programCounter + 1]
+        return self.nesSystem.cpu.cpuMemory[self.nesSystem.cpu.programCounter]
         
 
     def memoryInit(self):
@@ -35,12 +39,17 @@ class cpu:
         self.nesSystem.cpu.programCounter = (ord(self.nesSystem.cpu.cpuMemory[0xFFFD]) * 256) + ord(self.nesSystem.cpu.cpuMemory[0xFFFC]) - 1
         self.nesSystem.cpu.stackP = 0xFF
         self.nesSystem.cpu.accumulator = 0
-        self.nesSystem.cpu.xIndex = 0
-        self.nesSystem.cpu.yIndex = 0
+        self.nesSystem.cpu.registerX = 0
+        self.nesSystem.cpu.registerY = 0
         self.nesSystem.cpu.status = 0
         
     
-        
+    def pushStack(self, byte):
+        self.nesSystem.cpu.cpuMemory[self.nesSystem.stackP - 1 + 0x100] = byte
+    
+    def popStack(self):
+        return self.nesSystem.cpu.cpuMemory[self.nesSystem.stackP + 1 + 0x101]
+    
     def execute(self):
         
         
@@ -54,8 +63,15 @@ class cpu:
                     "0xa9" : instructions.LDA,
                     "0x10" : instructions.BPL,
                     "0x8d" : instructions.STA_bbbb,
+                    "0x20" : instructions.JSR,
+                    "0xa2" : instructions.LDX,
                     
                   }
+        tempCounter = self.nesSystem.cpu.programCounter
+
         #execute the instruction corresponding with the opcode signature          
         opCodes[currentOpCode](self.nesSystem, self)
-        print hex(self.nesSystem.cpu.programCounter)
+        
+        if self.DEBUG:
+            self.trace(currentOpCode, tempCounter, opCodes[currentOpCode].__name__)
+       
