@@ -7,7 +7,7 @@ class cpu:
     def __init__(self, nes): 
         self.nesSystem = nes
         self.operand = 0
-        self.DEBUG = 1
+        self.DEBUG = 0
         
     def trace(self, currentOpCode, tempCounter, instrName):
         print "PC:", hex(tempCounter), instrName, currentOpCode, "   Accumulator:", hex(ord(str(self.nesSystem.cpu.accumulator))), "Status:", self.nesSystem.cpu.status, "\n"
@@ -64,7 +64,7 @@ class cpu:
                     
                   }
         tempCounter = self.nesSystem.cpu.programCounter
-        print hex(self.nesSystem.cpu.programCounter)
+        #print hex(self.nesSystem.cpu.programCounter)
         #execute the instruction corresponding with the opcode signature          
         opCodes[currentOpCode](self.nesSystem, self)
         
