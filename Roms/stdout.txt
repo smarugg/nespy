@@ -1,9 +1,0 @@
-Loading E:\My Dropbox\Python\NES Emulation\Python Nes\nespy\Roms\mario.nes...
-
- PRG ROM:    2 x 16KiB
- CHR ROM:    1 x  8KiB
- ROM CRC32:  0x9a2db086
- ROM MD5:  0xba39dde63ab209b1bc751e0535e72b18
- Mapper:  0
- Mirroring: Vertical
-

@@ -1,6 +1,11 @@
-# use glob syntax.
+﻿# use glob syntax.
 syntax: glob
 
-*.nes
+*.elc
 *.pyc
+*.nes
 *~
+
+# switch to regexp syntax.
+syntax: regexp
+^\.pc/
