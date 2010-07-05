@@ -1,14 +1,14 @@
 import hardware, romloader, cpu
 
-nes = hardware.NES()   
-  
-r = romloader.romLoader(nes)
-r.loadRom("Roms/Mario.nes")
-#r.loadRom("Roms/Duck Hunt.nes")
+def setupEmulation(romPath):
+    
+    nes = hardware.NES()   
+    r = romloader.romLoader(nes)
+    r.loadRom(romPath)
 
-c = cpu.cpu(nes)
-
-c.memoryInit()
-c.cpuInit()
-while True:
-    c.execute()
+    c = cpu.cpu(nes)
+    c.memoryInit()
+    c.cpuInit()
+    return c
+def runEmulation(nesSystem):
+    nesSystem.execute()

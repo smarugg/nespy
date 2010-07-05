@@ -7,7 +7,7 @@ class cpu:
     def __init__(self, nes): 
         self.nesSystem = nes
         self.operand = 0
-        self.DEBUG = 0
+        self.DEBUG = 1
         
     def trace(self, currentOpCode, tempCounter, instrName):
         print "PC:", hex(tempCounter), instrName, currentOpCode, "   Accumulator:", hex(ord(str(self.nesSystem.cpu.accumulator))), "Status:", self.nesSystem.cpu.status, "\n"

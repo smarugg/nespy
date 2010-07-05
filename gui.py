@@ -1,6 +1,10 @@
 import wx
 import os
+import time
 import thread
+from threading import *
+from wx.lib.pubsub import Publisher
+import emulator
 global pygame # when we import it, let's keep its proper name!
 
 class SDLThread:
@@ -47,6 +51,53 @@ class SDLPanel(wx.Panel):
 
     def __del__(self):
         self.thread.Stop()
+        
+class EmulationThread(Thread):
+    """Test Worker Thread Class."""
+ 
+
+    def __init__(self, romPath):
+        """Init Worker Thread Class."""
+        self.running = True
+        self.path = romPath
+        self.paused = False
+        self.step = False
+        Thread.__init__(self)
+        self.start()    # start the thread
+        
+    def stepEmulation(self):
+        self.step = True
+    
+    def stopEmulation(self):
+        self.running = False
+        
+    def pauseEmulation(self):
+        self.paused = True
+        
+    def continueEmulation(self):
+        self.paused = False
+    
+    def run(self):
+        """Run Worker Thread."""
+        # This is the code executing in the new thread.
+        e = emulator.setupEmulation(self.path)
+        x = 0
+        while self.running:
+            if self.step:
+                emulator.runEmulation(e)
+                self.step = False
+            if not self.paused:
+                emulator.runEmulation(e)
+            #wx.CallAfter(self.postTime, i)
+        #wx.CallAfter(Publisher().sendMessage, "update", "Thread finished!")
+        print "Thread finished"
+
+    def postTime(self, amt):
+        """
+        Send time to GUI
+        """
+        amtOfTime = (amt + 1) * 10
+        Publisher().sendMessage("update", amtOfTime)
 
 class MyFrame(wx.Frame):
     def __init__(self, parent, ID, strTitle, tplSize):
@@ -55,6 +106,7 @@ class MyFrame(wx.Frame):
         
         #housekeeping
         self.currentDirectory = os.getcwd()
+        self.emulationObject = 0
         
         #create status bar
         statusBar = self.CreateStatusBar()
@@ -70,10 +122,13 @@ class MyFrame(wx.Frame):
         ID_EXIT = 2
         
         ID_CPU = 3
-        ID_PAUSE = 4
+        ID_PAUSE_EMU = 4
+        ID_CONTINUE_EMU = 8
+        ID_STEP_EMU = 9
+        ID_STOP_EMU = 5
         
-        ID_DISASSEMBLY = 5
-        ID_MEMORY = 6
+        ID_DISASSEMBLY = 6
+        ID_MEMORY = 7
         
         #first menu options (File)    
         firstOption.Append(ID_OPEN, "Open Rom", "Open a NES rom located on your computer")
@@ -81,10 +136,13 @@ class MyFrame(wx.Frame):
         
         #second menu options (CPU)
         secondOption.Append(ID_CPU, "Reset", "Reset execution of the current rom")
-        secondOption.Append(ID_PAUSE, "Pause", "Pause execution of the current rom")
+        secondOption.Append(ID_PAUSE_EMU, "Pause", "Pause execution of the current rom")
+        secondOption.Append(ID_CONTINUE_EMU, "Continue", "Continue execution of the current rom")
+        secondOption.Append(ID_STOP_EMU, "Stop Emulation", "Stop execution of the current rom")
+        secondOption.Append(ID_STEP_EMU, "Step Into", "Step through execution of the current rom once")
         
         #third menu options (Debug)
-        thirdOption.Append(ID_DISASSEMBLY, "Disassembly", "Show the disassembly of the current rom")
+        thirdOption.Append(ID_DISASSEMBLY, "Disassembly", "View the disassembly of the current rom")
         thirdOption.Append(ID_MEMORY, "Memory", "View the memory of the current rom")
         
         #add menu items to menubar
@@ -98,7 +156,10 @@ class MyFrame(wx.Frame):
         #wx.EVT_MENU(self, ID_EXIT, self.OnExit)
         wx.EVT_MENU(self, ID_OPEN, self.OnOpen)
         wx.EVT_MENU(self, ID_EXIT, self.OnExit)
-        
+        wx.EVT_MENU(self, ID_STOP_EMU, self.OnStop)
+        wx.EVT_MENU(self, ID_PAUSE_EMU, self.OnPause)
+        wx.EVT_MENU(self, ID_CONTINUE_EMU, self.OnContinue)
+        wx.EVT_MENU(self, ID_STEP_EMU, self.OnStep)
 
         #self.Fit()
      
@@ -117,8 +178,10 @@ class MyFrame(wx.Frame):
         if dlg.ShowModal() == wx.ID_OK:
             paths = dlg.GetPaths()
             print "You chose the following file(s):"
-            for path in paths:
-                print path
+            #emulator.runEmulation(paths[0])
+            self.emulationObject = EmulationThread(paths[0])
+            
+                    
         dlg.Destroy()    
             
      
@@ -126,8 +189,20 @@ class MyFrame(wx.Frame):
     def OnExit(self, e):
         self.Close(True)
         
+    #method handling stopping of emulation
+    def OnStop(self, e):
+        self.emulationObject.stopEmulation()
         
+    #method handling pausing of emulation
+    def OnPause(self, e):
+        self.emulationObject.pauseEmulation()
+
+    #method handling pausing of emulation
+    def OnContinue(self, e):
+        self.emulationObject.continueEmulation()  
         
+    def OnStep(self, e):
+        self.emulationObject.stepEmulation()    
 
 app = wx.PySimpleApp()
 frame = MyFrame(None, wx.ID_ANY, "nespy 0.1", (640,480))
