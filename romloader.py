@@ -33,11 +33,13 @@ class romLoader:
             self.nesSystem.rom.trainerData = romFile.read(self.nesSystem.rom.TRAINER_SIZE)
             
         #prg rom
-        #read prg count * prg size (different roms have different sized banks)
+        #read prg count * prg size (different roms have different sized banks). Ord() each item
         self.nesSystem.rom.prgData = romFile.read(self.nesSystem.rom.PRG_SIZE * self.nesSystem.rom.prgCount)
-        
+        self.nesSystem.rom.prgData = map(ord, self.nesSystem.rom.prgData)
         #chr rom
         self.nesSystem.rom.chrData = romFile.read(self.nesSystem.rom.CHR_SIZE * self.nesSystem.rom.chrCount)
+        self.nesSystem.rom.chrData = map(ord, self.nesSystem.rom.chrData)
+        
         
         print romPath, " ......LOADED"
         print "Mapper Number: ", self.nesSystem.rom.mapperNumber

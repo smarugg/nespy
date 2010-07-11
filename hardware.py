@@ -23,7 +23,7 @@ class Rom:
     
 class CPU:
     programCounter = 0
-    stackP = 0
+    stackP = []
     accumulator = 0
     registerX = 0
     registerY = 0
@@ -37,6 +37,9 @@ class CPU:
     
 class PPU:
     ppuMemory = [0x4000]
+    currentScanline = 0
+    ScanlinesofVBlank = 248
+    PPU2000Registers = [0, 0, 0, 0, 0, 0, 0]
     
     def __init__(self):
         pass
@@ -45,6 +48,12 @@ class NES:
     rom = Rom()
     cpu = CPU()
     ppu = PPU()
+    
+    totalCycles = 0
+    currentTickCount = 0
+    scanline = 0
+    cycles_per_scanline = 113
+    
     
     def __init__(self):
         pass

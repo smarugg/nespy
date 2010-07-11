@@ -1,14 +1,39 @@
-import hardware, romloader, cpu
+import hardware, romloader, cpu, ppu
 
-def setupEmulation(romPath):
+class emulator:
+    def __init__(self): 
+            self.nes = 0
+            self.r = 0
+            self.c = 0
+            self.paused = False
+            
+            
+    def setupEmulation(self, romPath):
+        
+        self.nes = hardware.NES()   
+        self.r = romloader.romLoader(self.nes)
+        self.r.loadRom(romPath)
+
+        self.c = cpu.cpu(self.nes)
+        self.c.memoryInit()
+        self.c.cpuInit()
+        
+        
+    def runEmulation(self):
     
-    nes = hardware.NES()   
-    r = romloader.romLoader(nes)
-    r.loadRom(romPath)
+        while True:
+            tempPC = x.nes.cpu.programCounter
+            while not self.paused:
+                x.nes.currentTickCount += x.c.executeOpCode()
+                x.nes.totalCycles += x.nes.currentTickCount
+               
+                if x.nes.currentTickCount >= x.nes.cycles_per_scanline:
+                    if x.c.ppu.nextScanline(self.nes):
+                        print "sdfsfs"
+                       
+                        
+                    x.nes.currentTickCount -= x.nes.cycles_per_scanline
 
-    c = cpu.cpu(nes)
-    c.memoryInit()
-    c.cpuInit()
-    return c
-def runEmulation(nesSystem):
-    nesSystem.execute()
+x = emulator()        
+x.setupEmulation("Roms/mario.nes")
+x.runEmulation()

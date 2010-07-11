@@ -80,14 +80,15 @@ class EmulationThread(Thread):
     def run(self):
         """Run Worker Thread."""
         # This is the code executing in the new thread.
-        e = emulator.setupEmulation(self.path)
+        e = emulator.emulator()
+        e.setupEmulation(self.path)
         x = 0
         while self.running:
             if self.step:
-                emulator.runEmulation(e)
+                e.runEmulation()
                 self.step = False
             if not self.paused:
-                emulator.runEmulation(e)
+                e.runEmulation()
             #wx.CallAfter(self.postTime, i)
         #wx.CallAfter(Publisher().sendMessage, "update", "Thread finished!")
         print "Thread finished"
