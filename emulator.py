@@ -33,7 +33,6 @@ class emulator:
                        
                         
                     x.nes.currentTickCount -= x.nes.cycles_per_scanline
-
 x = emulator()        
 x.setupEmulation("Roms/mario.nes")
 x.runEmulation()

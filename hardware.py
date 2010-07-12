@@ -24,6 +24,7 @@ class Rom:
 class CPU:
     programCounter = 0
     stackP = []
+    scratch1 = []
     accumulator = 0
     registerX = 0
     registerY = 0
@@ -33,13 +34,21 @@ class CPU:
     def __init__(self):   
         #fill the memory with nulls - limitation of python (can't assign to indexes that don't exist)
         for x in range(0x0, 0x10000):
-            self.cpuMemory.append(0) 
+            self.cpuMemory.append(0)
+            
+        for y in range(0x0, 0x1000):
+            self.scratch1.append(0) 
     
 class PPU:
     ppuMemory = [0x4000]
     currentScanline = 0
     ScanlinesofVBlank = 248
-    PPU2000Registers = [0, 0, 0, 0, 0, 0, 0]
+    #8 item lists to simulate 8 bit registers. Easier then bitwise hacks.
+    PPU2000Registers = [0, 0, 0, 0, 0, 0, 0, 0]
+    PPU2001Registers = [0, 0, 0, 0, 0, 0, 0, 0]
+    scrollRegisters = [0, 0, 0, 0, 0, 0, 0, 0]
+    PPU2006Registers = [0, 0, 0, 0, 0, 0, 0, 0]
+    
     
     def __init__(self):
         pass
