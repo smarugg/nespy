@@ -39,7 +39,8 @@ class romLoader:
         #chr rom
         self.nesSystem.rom.chrData = romFile.read(self.nesSystem.rom.CHR_SIZE * self.nesSystem.rom.chrCount)
         self.nesSystem.rom.chrData = map(ord, self.nesSystem.rom.chrData)
-        
+        # for index, x in enumerate(self.nesSystem.rom.chrData):
+            # print hex(index), hex(x)
         
         print romPath, " ......LOADED"
         print "Mapper Number: ", self.nesSystem.rom.mapperNumber

@@ -19,20 +19,25 @@ class emulator:
         self.c.cpuInit()
         
         
+        
     def runEmulation(self):
-    
         while True:
-            tempPC = x.nes.cpu.programCounter
             while not self.paused:
+                
                 x.nes.currentTickCount += x.c.executeOpCode()
-                x.nes.totalCycles += x.nes.currentTickCount
-               
+                #
+                x.nes.totalCycles += x.nes.currentTickCount      
                 if x.nes.currentTickCount >= x.nes.cycles_per_scanline:
                     if x.c.ppu.nextScanline(self.nes):
-                        print "sdfsfs"
+                        #print "Rendering frame", hex(x.c.programCounter)
+                        #print hex(x.nes.cpu.programCounter)
+                        x.c.pushByte16(x.nes.cpu.programCounter )
+                        x.c.pushStatus()
+                        x.nes.cpu.programCounter = ((x.c.readMemory(65530+1) << 8) + x.c.readMemory(65530))
+                        #print hex(x.nes.cpu.programCounter)
                        
                         
-                    x.nes.currentTickCount -= x.nes.cycles_per_scanline
+                    x.nes.currentTickCount -= x.nes.cycles_per_scanline      
 x = emulator()        
 x.setupEmulation("Roms/mario.nes")
 x.runEmulation()

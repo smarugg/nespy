@@ -48,10 +48,16 @@ class PPU:
     PPU2001Registers = [0, 0, 0, 0, 0, 0, 0, 0]
     scrollRegisters = [0, 0, 0, 0, 0, 0, 0, 0]
     PPU2006Registers = [0, 0, 0, 0, 0, 0, 0, 0]
-    
+    nameTables = [0xF00]
     
     def __init__(self):
-        pass
+    
+        for x in range(0x0, 0x4000):
+            self.ppuMemory.append(0)
+        
+        for x in range(0x0, 0xF00):
+            self.nameTables.append(0)
+        
     
 class NES:
     rom = Rom()

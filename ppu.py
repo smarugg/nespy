@@ -1,10 +1,11 @@
-import hardware, cpu
+import hardware, cpu, time
 
 class ppu:
 
     def __init__(self, nes): 
         self.DEBUG = 1
         self.firstWrite = 0
+        self.mirroring = "vert"
         #PPU 2000 register indexes
         self.NMIOnVBlank = 0
         self.ppuMasterSlave = 1
@@ -12,7 +13,8 @@ class ppu:
         self.backgroundPatternAddress = 3
         self.spritePatternAddress = 4
         self.ppuAddressIncrement = 5
-        
+        self.baseNametableAddress = 6
+                
         #PPU 2001 register indexes
         self.grayscale = 7
         self.backgroundClipping = 6
@@ -26,6 +28,9 @@ class ppu:
         self.scrollVert = 2
         self.scrollHori = 3
         
+    
+    def donothing(self, nesSystem):
+        return 0
             
     def nextScanline(self, nesSystem):
         if nesSystem.ppu.currentScanline < 240:
@@ -33,7 +38,8 @@ class ppu:
             pass
             
         if nesSystem.ppu.currentScanline == 240:
-            #print "Rendering frame"
+           
+            #print nesSystem.ppu.nameTables
             pass
             
         nesSystem.ppu.currentScanline += 1
@@ -76,11 +82,26 @@ class ppu:
             nesSystem.ppu.PPU2000Registers[self.spritePatternAddress] = 0 #0x0000
             
         if (registerData & 4) == 4:
-            nesSystem.ppu.PPU2000Registers[self.spritePatternAddress] = 32
+            nesSystem.ppu.PPU2000Registers[self.ppuAddressIncrement] = 32
         else:
-            nesSystem.ppu.PPU2000Registers[self.spritePatternAddress] = 1 
+            nesSystem.ppu.PPU2000Registers[self.ppuAddressIncrement] = 1 
             
-            
+        if (nesSystem.ppu.PPU2001Registers[self.backgroundVisible] == 1) or (nesSystem.ppu.PPU2000Registers[self.ppuMasterSlave] == 0xFF) or (nesSystem.ppu.PPU2000Registers[self.ppuMasterSlave] == 1):
+            address = registerData & 0x3
+            if address == 0x0:
+                nesSystem.ppu.PPU2000Registers[self.baseNametableAddress] = 0x2000
+            elif address == 0x1:
+                nesSystem.ppu.PPU2000Registers[self.baseNametableAddress] = 0x2400
+            elif address == 0x2:
+                nesSystem.ppu.PPU2000Registers[self.baseNametableAddress] = 0x2800
+            elif address == 0x3:
+                nesSystem.ppu.PPU2000Registers[self.baseNametableAddress] = 0x2C00
+           
+        if nesSystem.ppu.PPU2000Registers[self.ppuMasterSlave] == 0xFF:
+            if (registerData & 0x40) == 0x40:
+                nesSystem.ppu.PPU2000Registers[self.ppuMasterSlave] = 0
+            else:
+                nesSystem.ppu.PPU2000Registers[self.ppuMasterSlave] = 1
             
             
     def controlRegister2Write(self, nesSystem, registerData):
@@ -110,12 +131,18 @@ class ppu:
              nesSystem.ppu.PPU2001Registers[self.spritesVisible] = 0
         
         ppuColor = (registerData >> 5) #toggling between RGB
+        
           
     def vRamRegister2Write(self, nesSystem, registerData): 
         if self.firstWrite == 1:
+           # if registerData == 1:
+                #print "Found", nesSystem.cpu.programCounter
+            #print "Register Data", registerData << 8, registerData
+           # x = raw_input()
             nesSystem.ppu.PPU2006Registers[self.prevVramAddress] = nesSystem.ppu.PPU2006Registers[self.vramAddress]
             nesSystem.ppu.PPU2006Registers[self.vramAddress] = (registerData << 8)
             self.firstWrite = 0
+        
         
         else:
             nesSystem.ppu.PPU2006Registers[self.vramAddress] += registerData
@@ -123,7 +150,8 @@ class ppu:
                 if ((nesSystem.ppu.PPU2006Registers[self.vramAddress] >= 8192) and (nesSystem.ppu.PPU2006Registers[self.vramAddress] <= 9216)):
                     nesSystem.ppu.PPU2006Registers[self.scrollHori] = (((nesSystem.ppu.PPU2006Registers[self.vramAddress] - 8192) / 32) * 8 - nesSystem.ppu.currentScanline)
                     
-            self.firstWrite = 0
+            self.firstWrite = 1
+            
     
     def vRamRegister1Write(self, nesSystem, registerData): 
         if self.firstWrite == 1:
@@ -134,12 +162,54 @@ class ppu:
             if nesSystem.ppu.PPU2006Registers[self.scrollVert] > 239:
                 nesSystem.ppu.PPU2006Registers[self.scrollVert] = 0
             
-            self.firstWrite = 0
+            self.firstWrite = 1
 
     def ppuDataRegisterWrite(self, nesSystem, registerData):
+        time.sleep(0.0001)
+        
+        address = nesSystem.ppu.PPU2006Registers[self.vramAddress]
+       # print address
+        if nesSystem.ppu.PPU2006Registers[self.vramAddress] < 0x2000:
+            pass
+        
+        elif (nesSystem.ppu.PPU2006Registers[self.vramAddress] >= 0x2000) and (nesSystem.ppu.PPU2006Registers[self.vramAddress] < 0x3f00):
+            
+            if self.mirroring == "hori":
+                pass
+            
+            elif self.mirroring == "vert":
+            
+                if address == 0x2000:
+                    nesSystem.ppu.nameTables[nesSystem.ppu.PPU2006Registers[self.vramAddress] - 0x2000] = registerData
+                elif address == 0x2400:
+                    nesSystem.ppu.nameTables[nesSystem.ppu.PPU2006Registers[self.vramAddress] - 0x2000] = registerData
+                elif address == 0x2800:
+                    nesSystem.ppu.nameTables[nesSystem.ppu.PPU2006Registers[self.vramAddress] - 0x800 - 0x2000] = registerData
+                elif address == 0x2C00:
+                    nesSystem.ppu.nameTables[nesSystem.ppu.PPU2006Registers[self.vramAddress] - 0x800 - 0x2000] = registerData
+
+            
+            elif self.mirroring == "onescreen":
+                pass
+                
+            else:
+                nesSystem.ppu.nameTables[nesSystem.ppu.PPU2006Registers[self.vramAddress] - 0x2000] = registerData
+                
+        elif (nesSystem.ppu.PPU2006Registers[self.vramAddress] >= 0x3f00) and (nesSystem.ppu.PPU2006Registers[self.vramAddress] < 0x3f20):
+            nesSystem.ppu.nameTables[nesSystem.ppu.PPU2006Registers[self.vramAddress] - 0x2000] = registerData
+            
+            if ((nesSystem.ppu.PPU2006Registers[self.vramAddress] & 0x7) == 0):
+                nesSystem.ppu.nameTables[(nesSystem.ppu.PPU2006Registers[self.vramAddress] - 0x2000) ^ 0x10] = registerData
+     
+        nesSystem.ppu.PPU2006Registers[self.vramAddress] +=  nesSystem.ppu.PPU2000Registers[self.ppuAddressIncrement]
+
+    def ppuDataRegisterRead(self, nesSystem, registerData):
         #if nesSystem.ppu.PPU2006Registers[self.vramAddress] < 8192: #0x2000
         pass  
             
+    def spriteAddressRegisterWrite(self, nesSystem, registerData):
+        pass
+
             
     def statusRegisterRead(self, nesSystem):
         data = 0
